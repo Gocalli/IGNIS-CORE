@@ -60,6 +60,10 @@ class Menu:
         self.help_image = pygame.image.load('assets/graphics/help.jpg').convert()
         self.help_image = pygame.transform.scale(self.help_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+        # Cargar y escalar la imagen de fondo para la sección de Créditos
+        self.credits_image = pygame.image.load('assets/graphics/credits.jpg').convert()
+        self.credits_image = pygame.transform.scale(self.credits_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
     def draw_main(self):
         # Dibujar la imagen de fondo primero
         self.screen.blit(self.background_image, (0, 0))
@@ -75,27 +79,8 @@ class Menu:
         self.screen.blit(self.help_image, (0, 0))
 
     def draw_credits(self):
-        self.screen.fill(COLOR_BG)
-        lines = [
-            "--- CREDITOS ---",
-            "",
-            "Desarrollado por:",
-            "Santiago Castano",
-            "",
-            "Arte & Diseno:",
-            "Santiago Castano",
-            "",
-            "Motor:",
-            "Pygame CE",
-            "",
-            "Presiona ESC para volver"
-        ]
-        
-        for i, line in enumerate(lines):
-            color = COLOR_PLAYER if i % 3 == 0 else COLOR_TEXT
-            surf = self.font_button.render(line, True, color)
-            rect = surf.get_rect(center=(SCREEN_WIDTH//2, 100 + i * 40))
-            self.screen.blit(surf, rect)
+        # Dibujar la imagen de fondo para créditos
+        self.screen.blit(self.credits_image, (0, 0))
 
     def update(self):
         # Dibujar según el sub-menú
