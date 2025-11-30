@@ -43,7 +43,7 @@ class Player(pygame.sprite.Sprite):
 
     def import_character_assets(self):
         path = 'assets/graphics/player/'
-        self.animations = {'idle': [], 'run': [], 'run_overheated': [], 'jump': [], 'fall': [], 'attack': []}
+        self.animations = {'idle': [], 'run': [], 'run_overheated': [], 'jump': [], 'fall': [], 'attack': [], 'dash': []}
         
         # CONSTANTES DE ESCALA
         TARGET_HEIGHT = 64.0   # Altura deseada en el juego
@@ -65,15 +65,77 @@ class Player(pygame.sprite.Sprite):
         # --- IDLE (Base) ---
         self.animations['idle'] = load_and_scale('idle_spritesheet.png', 188, 188, 4)
         
-        # --- RUN (7 frames: 3 normal + 4 overheated) ---
+        # --- RUN (7 frames - animación secuencial completa) ---
         run_frames = load_and_scale('run_spritesheet.png', 188, 188, 7)
         if run_frames:
-            self.animations['run'] = run_frames[0:3]
-            self.animations['run_overheated'] = run_frames[3:]
+            self.animations['run'] = run_frames[:] # Todos los 7 frames para 'run'
+            self.animations['run_overheated'] = run_frames[:] # 'run_overheated' usa los mismos frames
             
         # --- JUMP (188x234) -> Se escala auto ---
         # Ya no ponemos (64, 80) a mano. El código calculará: 234 * 0.34 = ~79.6
         self.animations['jump'] = load_and_scale('jump_spritesheet.png', 188, 234, 3)
+
+        # --- ATTACK (Custom loader para anchos variables) ---
+        # Archivo: 870x234. Frames: 211, 211, 211, 237.
+        # Representa 2 ataques: Frame 0-1 (Golpe 1), Frame 2-3 (Golpe 2)
+        try:
+            attack_sheet = pygame.image.load(path + 'attack_spritesheet.png').convert_alpha()
+            attack_frames = []
+            # Definimos los recortes exactos (x, y, width, height)
+            crops = [
+                (0, 0, 211, 234),   # Inicio ataque 1
+                (211, 0, 211, 234), # Mitad/Fin ataque 1
+                (422, 0, 211, 234), # Inicio ataque 2
+                (633, 0, 237, 234)  # Golpe final ataque 2
+            ]
+            
+            # Usamos SCALE_FACTOR global (basado en 188px) para mantener el tamaño del cuerpo constante.
+            # Si el sprite de ataque es mas alto (234px), resultará en una imagen > 64px, 
+            # lo cual es correcto (espacio extra para la espada/efecto).
+
+            for (x, y, w, h) in crops:
+                # 1. Recortar
+                frame_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+                frame_surf.blit(attack_sheet, (0, 0), pygame.Rect(x, y, w, h))
+                # 2. Escalar
+                new_w = int(w * SCALE_FACTOR)
+                new_h = int(h * SCALE_FACTOR)
+                frame_scaled = pygame.transform.scale(frame_surf, (new_w, new_h))
+                attack_frames.append(frame_scaled)
+            
+            self.animations['attack'] = attack_frames
+            
+        except Exception as e:
+            print(f"Error cargando attack_spritesheet.png: {e}")
+            # Fallback si falla la carga
+            pass
+
+        # --- DASH (Custom loader) ---
+        # Archivo: 712x211. Frames: 234, 234, 244.
+        try:
+            dash_sheet = pygame.image.load(path + 'dash_spritesheet.png').convert_alpha()
+            dash_frames = []
+            # Definimos los recortes exactos (x, y, width, height)
+            # Altura fija de 211px
+            dash_crops = [
+                (0, 0, 234, 211),   
+                (234, 0, 234, 211), 
+                (468, 0, 244, 211)  
+            ]
+            
+            # Usamos SCALE_FACTOR global (basado en 188px)
+            for (x, y, w, h) in dash_crops:
+                frame_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+                frame_surf.blit(dash_sheet, (0, 0), pygame.Rect(x, y, w, h))
+                
+                new_w = int(w * SCALE_FACTOR)
+                new_h = int(h * SCALE_FACTOR)
+                frame_scaled = pygame.transform.scale(frame_surf, (new_w, new_h))
+                dash_frames.append(frame_scaled)
+                
+            self.animations['dash'] = dash_frames
+        except Exception as e:
+             print(f"Error cargando dash_spritesheet.png: {e}")
 
         self.player_rect_size = (64, 64) 
 
@@ -87,11 +149,6 @@ class Player(pygame.sprite.Sprite):
         # Fall (Legacy fallback)
         img = load_safe('fall_0.png')
         if img: self.animations['fall'].append(img)
-        
-        # Attack
-        for i in range(2): 
-            img = load_safe(f'attack_{i}.png')
-            if img: self.animations['attack'].append(img)
         
         # Fallbacks
         idle_anim = self.animations.get('idle', [])
@@ -121,7 +178,8 @@ class Player(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.flip(image, True, False)
             
-        if self.overheated and self.status not in ['run_overheated']:
+        # Aplicar el tint si está sobrecalentado (ahora que run y run_overheated comparten frames)
+        if self.overheated:
              self.image.fill((255, 50, 0, 100), special_flags=pygame.BLEND_RGBA_MULT)
 
         # FIX: Anclar al suelo (midbottom) en lugar del centro
@@ -136,10 +194,10 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = previous_rect.centerx # Mantener centro horizontal
 
     def get_status(self):
-        if self.attacking:
+        if self.dashing:
+            self.status = 'dash'
+        elif self.attacking:
             self.status = 'attack'
-        elif self.dashing: 
-            self.status = 'run' if not self.overheated else 'run_overheated'
         elif self.direction.y < 0:
             self.status = 'jump'
         elif self.direction.y > 1: 
