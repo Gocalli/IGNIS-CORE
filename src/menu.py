@@ -52,19 +52,18 @@ class Menu:
         # Estado interno del menú (Main, Help, Credits)
         self.sub_menu = 'main' 
 
-    def draw_main(self):
-        self.screen.fill(COLOR_BG)
-        
-        # Título con sombra
-        title_surf = self.font_title.render(TITLE, True, COLOR_PLAYER)
-        title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, 150))
-        
-        # Sombra simple
-        shadow_surf = self.font_title.render(TITLE, True, (0, 0, 0))
-        shadow_rect = shadow_surf.get_rect(center=(SCREEN_WIDTH // 2 + 4, 150 + 4))
-        self.screen.blit(shadow_surf, shadow_rect)
-        self.screen.blit(title_surf, title_rect)
+        # Cargar y escalar la imagen de fondo
+        self.background_image = pygame.image.load('assets/graphics/menu.jpg').convert()
+        self.background_image = pygame.transform.scale(self.background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+        # Cargar y escalar la imagen de fondo para la sección de Ayuda
+        self.help_image = pygame.image.load('assets/graphics/help.jpg').convert()
+        self.help_image = pygame.transform.scale(self.help_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+    def draw_main(self):
+        # Dibujar la imagen de fondo primero
+        self.screen.blit(self.background_image, (0, 0))
+        
         # Botones
         mouse_pos = pygame.mouse.get_pos()
         for btn in self.buttons:
@@ -72,28 +71,8 @@ class Menu:
             btn.draw(self.screen)
 
     def draw_help(self):
-        self.screen.fill(COLOR_BG)
-        lines = [
-            "--- CONTROLES ---",
-            "",
-            "FLECHAS : Moverse",
-            "ESPACIO : Saltar",
-            "Z       : Atacar (Martillo)",
-            "X       : Dash (Impulso)",
-            "C       : Ventilar (Enfriar)",
-            "",
-            "--- MECANICA ---",
-            "¡Cuidado con el calor!",
-            "Atacar sube tu temperatura.",
-            "Si te sobrecalientas, pierdes vida.",
-            "",
-            "Presiona ESC para volver"
-        ]
-        
-        for i, line in enumerate(lines):
-            surf = self.font_button.render(line, True, COLOR_TEXT)
-            rect = surf.get_rect(center=(SCREEN_WIDTH//2, 100 + i * 40))
-            self.screen.blit(surf, rect)
+        # Dibujar la imagen de fondo para ayuda
+        self.screen.blit(self.help_image, (0, 0))
 
     def draw_credits(self):
         self.screen.fill(COLOR_BG)
