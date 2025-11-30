@@ -45,25 +45,37 @@ class Player(pygame.sprite.Sprite):
         path = 'assets/graphics/player/'
         self.animations = {'idle': [], 'run': [], 'run_overheated': [], 'jump': [], 'fall': [], 'attack': []}
         
-        # --- IDLE ---
-        raw_idle = import_spritesheet_row(path + 'idle_spritesheet.png', 188, 188, 4)
-        self.animations['idle'] = [pygame.transform.scale(img, (64, 64)) for img in raw_idle]
+        # CONSTANTES DE ESCALA
+        TARGET_HEIGHT = 64.0   # Altura deseada en el juego
+        SOURCE_REF_HEIGHT = 188.0 # Altura original del sprite base (Idle)
+        SCALE_FACTOR = TARGET_HEIGHT / SOURCE_REF_HEIGHT
         
-        # --- RUN (Normal + Overheated) ---
-        # 7 frames total: 0-2 normal, 3-6 overheated
-        raw_run = import_spritesheet_row(path + 'run_spritesheet.png', 188, 188, 7)
-        if raw_run:
-            scaled_run = [pygame.transform.scale(img, (64, 64)) for img in raw_run]
-            self.animations['run'] = scaled_run[0:3]           # Frames 0, 1, 2
-            self.animations['run_overheated'] = scaled_run[3:] # Frames 3, 4, 5, 6
+        def load_and_scale(filename, src_w, src_h, count):
+            """Carga y escala proporcionalmente basado en el factor global."""
+            try:
+                frames = import_spritesheet_row(path + filename, src_w, src_h, count)
+                # Calcular nuevas dimensiones manteniendo proporción
+                new_w = int(src_w * SCALE_FACTOR)
+                new_h = int(src_h * SCALE_FACTOR)
+                return [pygame.transform.scale(img, (new_w, new_h)) for img in frames]
+            except Exception as e:
+                print(f"Error cargando {filename}: {e}")
+                return []
+
+        # --- IDLE (Base) ---
+        self.animations['idle'] = load_and_scale('idle_spritesheet.png', 188, 188, 4)
         
+        # --- RUN (7 frames: 3 normal + 4 overheated) ---
+        run_frames = load_and_scale('run_spritesheet.png', 188, 188, 7)
+        if run_frames:
+            self.animations['run'] = run_frames[0:3]
+            self.animations['run_overheated'] = run_frames[3:]
+            
+        # --- JUMP (188x234) -> Se escala auto ---
+        # Ya no ponemos (64, 80) a mano. El código calculará: 234 * 0.34 = ~79.6
+        self.animations['jump'] = load_and_scale('jump_spritesheet.png', 188, 234, 3)
+
         self.player_rect_size = (64, 64) 
-        
-        # --- JUMP ---
-        # 3 frames, 188x234. Escalamos a 64x80 para mantener proporción.
-        raw_jump = import_spritesheet_row(path + 'jump_spritesheet.png', 188, 234, 3)
-        if raw_jump:
-             self.animations['jump'] = [pygame.transform.scale(img, (64, 80)) for img in raw_jump]
 
         def load_safe(filename):
             try:
@@ -72,11 +84,7 @@ class Player(pygame.sprite.Sprite):
                 return None
 
         # Cargar otras animaciones con chequeo de errores
-        # Jump/Fall (Legacy fallback)
-        if not self.animations['jump']:
-             img = load_safe('jump_0.png')
-             if img: self.animations['jump'].append(img)
-        
+        # Fall (Legacy fallback)
         img = load_safe('fall_0.png')
         if img: self.animations['fall'].append(img)
         
@@ -92,7 +100,6 @@ class Player(pygame.sprite.Sprite):
             fallback_surf.fill((255, 0, 255)) 
             idle_anim = [fallback_surf]
             self.animations['idle'] = idle_anim
-            self.player_rect_size = (32, 64)
 
         for anim_name in self.animations.keys():
             if not self.animations[anim_name]:
