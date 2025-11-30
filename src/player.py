@@ -58,6 +58,12 @@ class Player(pygame.sprite.Sprite):
             self.animations['run_overheated'] = scaled_run[3:] # Frames 3, 4, 5, 6
         
         self.player_rect_size = (64, 64) 
+        
+        # --- JUMP ---
+        # 3 frames, 188x234. Escalamos a 64x80 para mantener proporción.
+        raw_jump = import_spritesheet_row(path + 'jump_spritesheet.png', 188, 234, 3)
+        if raw_jump:
+             self.animations['jump'] = [pygame.transform.scale(img, (64, 80)) for img in raw_jump]
 
         def load_safe(filename):
             try:
@@ -66,9 +72,10 @@ class Player(pygame.sprite.Sprite):
                 return None
 
         # Cargar otras animaciones con chequeo de errores
-        # Jump/Fall
-        img = load_safe('jump_0.png')
-        if img: self.animations['jump'].append(img)
+        # Jump/Fall (Legacy fallback)
+        if not self.animations['jump']:
+             img = load_safe('jump_0.png')
+             if img: self.animations['jump'].append(img)
         
         img = load_safe('fall_0.png')
         if img: self.animations['fall'].append(img)
@@ -107,18 +114,19 @@ class Player(pygame.sprite.Sprite):
         else:
             self.image = pygame.transform.flip(image, True, False)
             
-        # Nota: Ya no coloreamos de rojo aquí si estamos 'run_overheated',
-        # porque el sprite ya tiene el color. Pero para 'idle' u otros estados
-        # donde no tenemos sprites específicos de calor, podríamos mantener el tinte.
         if self.overheated and self.status not in ['run_overheated']:
              self.image.fill((255, 50, 0, 100), special_flags=pygame.BLEND_RGBA_MULT)
 
-        current_center = self.rect.center
-        self.rect = self.image.get_rect(center=current_center)
-        self.rect.width = 32 
-        self.rect.x += (self.image.get_width() - self.rect.width) // 2
-        self.rect.height = 64 
-        self.rect.y += (self.image.get_height() - self.rect.height) 
+        # FIX: Anclar al suelo (midbottom) en lugar del centro
+        # Esto evita que el personaje "salte" o se hunda cuando cambia el tamaño de la imagen
+        previous_rect = self.rect
+        self.rect = self.image.get_rect()
+        self.rect.midbottom = previous_rect.midbottom
+        
+        # Ajustar hitbox de colisión (más estrecho que la imagen para perdonar roces)
+        # Mantenemos el ancho lógico de 32px pero respetamos la posición visual
+        self.rect.width = 32
+        self.rect.centerx = previous_rect.centerx # Mantener centro horizontal
 
     def get_status(self):
         if self.attacking:
