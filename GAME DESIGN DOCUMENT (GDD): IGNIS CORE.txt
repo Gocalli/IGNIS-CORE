@@ -1,0 +1,85 @@
+import pygame
+import os
+
+# 1. Inicializar Pygame
+pygame.init()
+# Creamos una pantalla dummy, aunque no la usaremos para mostrar nada,
+# es necesario para que ciertas funciones de imagen de Pygame funcionen correctamente.
+screen = pygame.display.set_mode((100, 100))
+
+# 2. Definir Rutas
+base_path = 'assets/graphics'
+spritesheet_path = os.path.join(base_path, 'caldera_sprites.png')
+# Carpeta donde guardaremos los frames individuales
+output_player_path = os.path.join(base_path, 'player')
+
+# Crear la carpeta de salida si no existe
+if not os.path.exists(output_player_path):
+    os.makedirs(output_player_path)
+
+# 3. Cargar el Spritesheet
+try:
+    # Usamos convert_alpha() para manejar la transparencia correctamente
+    spritesheet = pygame.image.load(spritesheet_path).convert_alpha()
+    print(f"Spritesheet cargado con éxito desde: {spritesheet_path}")
+    print(f"Dimensiones del spritesheet: {spritesheet.get_width()}x{spritesheet.get_height()}")
+except FileNotFoundError:
+    print(f"ERROR: No se encontró el archivo: {spritesheet_path}")
+    print("Asegúrate de que el archivo 'caldera_sprites.png' esté en la carpeta 'assets/graphics'.")
+    pygame.quit()
+    exit()
+
+# 4. Definir las Dimensiones y la Función de Recorte
+FRAME_WIDTH = 128
+FRAME_HEIGHT = 128
+
+def save_frame(sheet, x_grid, y_grid, name, path):
+    """
+    Recorta un frame del spritesheet y lo guarda como una imagen individual.
+    x_grid, y_grid: Coordenadas del frame en la cuadrícula (empezando desde 0,0).
+    """
+    # Crear una superficie para el nuevo frame
+    frame_surf = pygame.Surface((FRAME_WIDTH, FRAME_HEIGHT), pygame.SRCALPHA)
+    # Calcular la posición en píxeles en el spritesheet original
+    src_rect = pygame.Rect(x_grid * FRAME_WIDTH, y_grid * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT)
+    # Copiar la región del spritesheet a la nueva superficie
+    frame_surf.blit(sheet, (0, 0), src_rect)
+    # Guardar la imagen
+    full_path = os.path.join(path, name)
+    pygame.image.save(frame_surf, full_path)
+    print(f"Guardado: {name}")
+
+# --- 5. Recortar y Guardar los Frames ---
+
+print("--- Procesando Frames del Jugador ---")
+
+# Animación de Idle (Reposo) - Fila Superior (índice y = 0)
+# Supongamos que hay 6 frames de idle, como vimos antes.
+NUM_IDLE_FRAMES = 6
+for i in range(NUM_IDLE_FRAMES):
+    # Se guardarán como idle_0.png, idle_1.png, etc.
+    save_frame(spritesheet, i, 0, f'idle_{i}.png', output_player_path)
+
+# Animación de Run (Correr) - Segunda Fila (índice y = 1)
+# Supongamos que hay 8 frames de correr.
+NUM_RUN_FRAMES = 8
+for i in range(NUM_RUN_FRAMES):
+    # Se guardarán como run_0.png, run_1.png, etc.
+    save_frame(spritesheet, i, 1, f'run_{i}.png', output_player_path)
+
+# NOTA: Tu script original generaba también 'jump', 'fall' y 'attack'.
+# Como no hemos definido en qué filas de TU spritesheet están estas animaciones,
+# por ahora solo cortaremos 'idle' y 'run'.
+#
+# Si quieres añadir 'jump', por ejemplo, y sabes que está en la fila 3 (índice y=2):
+#
+# # Animación de Jump (Saltar) - Tercera Fila (índice y = 2)
+# NUM_JUMP_FRAMES = 3 # Por ejemplo
+# for i in range(NUM_JUMP_FRAMES):
+#     save_frame(spritesheet, i, 2, f'jump_{i}.png', output_player_path)
+
+print("--- Proceso Completado ---")
+print(f"Los frames individuales se han guardado en: {output_player_path}")
+
+# Cerrar Pygame
+pygame.quit()
