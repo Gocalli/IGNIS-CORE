@@ -12,13 +12,13 @@ level_0 = [
     "X                  X", # 0 (Techo/Aire)
     "X                  X", # 1
     "X                  X", # 2
-    "X        XXXX      X", # 3 (Plataforma central superior - Motor)
+    "X      xxxxxxx     X", # 3 (Plataforma central superior - Motor)
     "X                  X", # 4
     "X                  X", # 5
     "X                  X", # 6
-    "XXX       XXXX     X", # 7 (Plataformas laterales flotantes)
+    "XXX       XXXX   XXX", # 7 (Plataformas laterales flotantes)
     "X   XXX            X", # 8
-    "X P                X", # 9 (Jugador cerca del suelo)
+    "X P             E  X", # 9 (Jugador cerca del suelo)
     "XXXXXXXXXXXXXXXXXXXX", # 10 (Suelo principal)
     "XXXXXXXXXXXXXXXXXXXX", # 11 (Margen inferior)
 ]
