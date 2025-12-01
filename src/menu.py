@@ -116,3 +116,63 @@ class Menu:
                 if event.key == pygame.K_ESCAPE:
                     if self.sub_menu != 'main':
                         self.sub_menu = 'main'
+
+class PauseMenu:
+    def __init__(self, game):
+        self.game = game
+        self.screen = pygame.display.get_surface()
+        self.font_title = pygame.font.SysFont('impact', 60)
+        self.font_button = pygame.font.SysFont('monospace', 30)
+        
+        center_x = SCREEN_WIDTH // 2 - 125
+        center_y = SCREEN_HEIGHT // 2 - 50
+        
+        self.buttons = [
+            Button("CONTINUAR", (center_x, center_y), 250, 50, self.font_button),
+            Button("MENU PRINCIPAL", (center_x, center_y + 70), 250, 50, self.font_button)
+        ]
+        
+        # Overlay semitransparente
+        self.overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.overlay.fill((0, 0, 0))
+        self.overlay.set_alpha(150)
+
+    def draw(self):
+        # Dibujar overlay
+        self.screen.blit(self.overlay, (0, 0))
+        
+        # Título PAUSA
+        title_surf = self.font_title.render("PAUSA", True, COLOR_TEXT)
+        title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 150))
+        self.screen.blit(title_surf, title_rect)
+        
+        # Botones
+        mouse_pos = pygame.mouse.get_pos()
+        for btn in self.buttons:
+            btn.check_hover(mouse_pos)
+            btn.draw(self.screen)
+
+    def update(self):
+        self.draw()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+                
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for btn in self.buttons:
+                    if btn.check_hover(mouse_pos):
+                        if btn.text == "CONTINUAR":
+                            self.game.state = 'level'
+                        elif btn.text == "MENU PRINCIPAL":
+                            self.game.state = 'menu'
+                            # Importamos Level aquí para evitar import circular si fuera necesario, 
+                            # pero como 'game' ya tiene Level importado, mejor confiamos en game.py para reiniciar
+                            # Sin embargo, para simplificar, le pediremos a Game que reinicie el nivel
+                            self.game.reset_level() 
+                            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.game.state = 'level'

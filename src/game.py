@@ -2,7 +2,7 @@ import pygame
 import sys
 from .settings import *
 from .level import Level
-from .menu import Menu
+from .menu import Menu, PauseMenu
 
 class Game:
     def __init__(self):
@@ -12,11 +12,15 @@ class Game:
         self.clock = pygame.time.Clock()
         
         # Estados del juego
-        self.state = 'menu' # menu, level
+        self.state = 'menu' # menu, level, paused
         
         # Componentes
         self.level = Level()
-        self.menu = Menu(self) # Pasamos 'self' para que el menú pueda cambiar el estado
+        self.menu = Menu(self) 
+        self.pause_menu = PauseMenu(self)
+
+    def reset_level(self):
+        self.level = Level()
 
     def run(self):
         while True:
@@ -36,12 +40,14 @@ class Game:
                         sys.exit()
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:
-                            self.state = 'menu'
-                            # Opcional: Reiniciar nivel al salir?
-                            # self.level = Level() 
+                            self.state = 'paused'
 
                 self.screen.fill(COLOR_BG)
                 self.level.run()
+                
+            elif self.state == 'paused':
+                # No limpiamos la pantalla para ver el nivel de fondo
+                self.pause_menu.update()
 
             pygame.display.update()
             self.clock.tick(FPS)
