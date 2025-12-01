@@ -174,3 +174,63 @@ class Enemy(pygame.sprite.Sprite):
         self.actions(player)
         self.cooldowns()
         self.animate()
+
+class Boss(Enemy):
+    def __init__(self, pos, distance):
+        super().__init__(pos, distance)
+        self.health = 50  # Más vida que el enemigo normal
+        self.attack_cooldown = 1500
+        self.speed = 1.5 # Más lento por ser grande
+        
+        # Asegurar que use la animación correcta al inicio
+        self.image = self.animations[self.status][self.frame_index]
+        self.rect = self.image.get_rect(topleft=pos)
+
+    def import_graphics(self):
+        self.animations = {'move': [], 'attack': [], 'die': []}
+        target_height = 160  # Boss mucho más grande (Personaje ~64)
+
+        # --- IDLE (Usado para move) ---
+        # idle_boss.png: 768x283 -> 4 frames de 192x283
+        try:
+            idle_frames = import_spritesheet_row('assets/graphics/enemy/idle_boss.png', 192, 283, 4)
+            scaled_idle = []
+            for frame in idle_frames:
+                scale = target_height / frame.get_height()
+                new_w = int(frame.get_width() * scale)
+                new_h = int(frame.get_height() * scale)
+                scaled_idle.append(pygame.transform.scale(frame, (new_w, new_h)))
+            self.animations['move'] = scaled_idle
+        except Exception as e:
+            print(f"Error cargando idle_boss: {e}")
+
+        # --- ATTACK ---
+        # attack_boss.png: 998x302. Asumimos 4 frames distribuidos.
+        try:
+            attack_sheet = pygame.image.load('assets/graphics/enemy/attack_boss.png').convert_alpha()
+            sheet_w = attack_sheet.get_width()
+            sheet_h = attack_sheet.get_height()
+            num_frames = 4
+            frame_w = sheet_w // num_frames # ~249
+
+            scaled_attack = []
+            for i in range(num_frames):
+                x = i * frame_w
+                w = frame_w
+                
+                frame_surf = pygame.Surface((w, sheet_h), pygame.SRCALPHA)
+                frame_surf.blit(attack_sheet, (0, 0), pygame.Rect(x, 0, w, sheet_h))
+                
+                scale = target_height / sheet_h
+                new_w = int(w * scale)
+                new_h = int(sheet_h * scale)
+                scaled_attack.append(pygame.transform.scale(frame_surf, (new_w, new_h)))
+            
+            self.animations['attack'] = scaled_attack
+        except Exception as e:
+            print(f"Error cargando attack_boss: {e}")
+            self.animations['attack'] = self.animations['move']
+
+        # --- DIE ---
+        # Por ahora usamos el idle/move como placeholder si no hay asset de muerte
+        self.animations['die'] = self.animations['move']

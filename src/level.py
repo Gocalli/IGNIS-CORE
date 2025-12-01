@@ -1,7 +1,7 @@
 import pygame
 from .settings import *
 from .player import Player
-from .enemy import Enemy
+from .enemy import Enemy, Boss
 from .ui import UI
 from .maps import levels # Importar los mapas
 
@@ -95,6 +95,11 @@ class Level:
                     enemy = Enemy((x, y + TILE_SIZE // 2), 200) # Ajuste y + 32 a y + TILE_SIZE // 2
                     self.visible_sprites.add(enemy)
                     self.enemy_sprites.add(enemy)
+                
+                if cell == 'B':
+                    boss = Boss((x, y + TILE_SIZE // 2), 200) # Usar la clase Boss
+                    self.visible_sprites.add(boss)
+                    self.enemy_sprites.add(boss)
 
     def horizontal_movement_collision(self):
         player = self.player
