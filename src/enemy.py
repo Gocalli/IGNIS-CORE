@@ -5,59 +5,149 @@ from .support import import_spritesheet_row
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos, distance):
         super().__init__()
-        # Cargar animaciones
-        self.frames = import_spritesheet_row('assets/graphics/enemy/idle_drone.png', 189, 94, 4)
-        
-        # Escalar a tamaño de juego (altura 64px)
-        scaled_frames = []
-        target_height = 64
-        for frame in self.frames:
-            scale = target_height / frame.get_height()
-            new_width = int(frame.get_width() * scale)
-            new_height = int(frame.get_height() * scale)
-            scaled_frames.append(pygame.transform.scale(frame, (new_width, new_height)))
-        self.frames = scaled_frames
-
+        self.import_graphics()
         self.frame_index = 0
         self.animation_speed = 0.15
+        self.status = 'move'
         
-        if self.frames:
-            self.image = self.frames[self.frame_index]
-        else:
-            # Fallback simple si falla la carga
-            self.image = pygame.Surface((64, 64))
-            self.image.fill('red')
-            
+        self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
         
-        # Lógica de movimiento
+        # Movimiento
         self.start_x = pos[0]
         self.max_distance = distance
         self.speed = ENEMY_SPEED
         self.direction = 1 
-
-    def animate(self):
-        if not self.frames:
-            return
-
-        self.frame_index += self.animation_speed
-        if self.frame_index >= len(self.frames):
-            self.frame_index = 0
-            
-        image = self.frames[int(self.frame_index)]
         
-        # Voltear sprite según dirección
-        if self.direction > 0:
-            self.image = image
+        # Combate
+        self.health = 3
+        self.can_attack = True
+        self.attack_time = 0
+        self.attack_cooldown = ENEMY_ATTACK_COOLDOWN
+
+    def import_graphics(self):
+        self.animations = {'move': [], 'attack': []}
+        target_height = 64
+
+        # --- IDLE / MOVE (idle_drone.png) ---
+        # Usamos el idle como animación de movimiento por ahora
+        idle_frames = import_spritesheet_row('assets/graphics/enemy/idle_drone.png', 189, 94, 4)
+        scaled_idle = []
+        for frame in idle_frames:
+            scale = target_height / frame.get_height()
+            new_w = int(frame.get_width() * scale)
+            new_h = int(frame.get_height() * scale)
+            scaled_idle.append(pygame.transform.scale(frame, (new_w, new_h)))
+        self.animations['move'] = scaled_idle
+
+        # --- ATTACK (attack_drone.png) ---
+        # Estructura especial: 208, 208, resto. Altura 94.
+        try:
+            attack_sheet = pygame.image.load('assets/graphics/enemy/attack_drone.png').convert_alpha()
+            sheet_w = attack_sheet.get_width()
+            sheet_h = attack_sheet.get_height() # Debería ser 94
+            
+            # Definir recortes
+            crops = [
+                (0, 0, 208, 94),
+                (208, 0, 208, 94),
+                (416, 0, sheet_w - 416, 94)
+            ]
+            
+            scaled_attack = []
+            for (x, y, w, h) in crops:
+                # Crear surface
+                frame_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+                frame_surf.blit(attack_sheet, (0, 0), pygame.Rect(x, y, w, h))
+                
+                # Escalar
+                scale = target_height / h
+                new_w = int(w * scale)
+                new_h = int(h * scale)
+                scaled_attack.append(pygame.transform.scale(frame_surf, (new_w, new_h)))
+            
+            self.animations['attack'] = scaled_attack
+            
+        except Exception as e:
+            print(f"Error cargando attack_drone: {e}")
+            # Fallback: usar move
+            self.animations['attack'] = self.animations['move']
+
+    def get_player_distance_direction(self, player):
+        enemy_vec = pygame.math.Vector2(self.rect.center)
+        player_vec = pygame.math.Vector2(player.rect.center)
+        distance = (player_vec - enemy_vec).magnitude()
+        
+        if distance > 0:
+            direction = (player_vec - enemy_vec).normalize()
         else:
-            self.image = pygame.transform.flip(image, True, False)
+            direction = pygame.math.Vector2()
+            
+        return (distance, direction)
+
+    def get_status(self, player):
+        distance, _ = self.get_player_distance_direction(player)
+        
+        if distance < ENEMY_ATTACK_DISTANCE:
+            self.status = 'attack'
+        else:
+            self.status = 'move'
+
+    def actions(self, player):
+        if self.status == 'move':
+            self.move()
+        elif self.status == 'attack':
+            self.attack_logic()
 
     def move(self):
         self.rect.x += self.speed * self.direction
         
         if abs(self.rect.x - self.start_x) > self.max_distance:
             self.direction *= -1
+            
+    def attack_logic(self):
+        current_time = pygame.time.get_ticks()
+        if self.can_attack:
+            # Aquí iniciaría el daño real, por ahora solo animación
+            self.can_attack = False
+            self.attack_time = current_time
+            self.frame_index = 0 # Reiniciar animación al atacar
 
-    def update(self):
-        self.move()
+    def cooldowns(self):
+        current_time = pygame.time.get_ticks()
+        if not self.can_attack:
+            if current_time - self.attack_time >= self.attack_cooldown:
+                self.can_attack = True
+
+    def take_damage(self):
+        self.health -= 1
+        print(f"Enemy hit! HP: {self.health}") # Debug
+        if self.health <= 0:
+            self.kill()
+
+    def animate(self):
+        animation = self.animations[self.status]
+        
+        self.frame_index += self.animation_speed
+        if self.frame_index >= len(animation):
+            if self.status == 'attack':
+                # Si termina el ataque, esperamos al cooldown
+                # Por ahora lo dejamos en el último frame o reiniciamos
+                self.frame_index = 0 
+            else:
+                self.frame_index = 0
+            
+        image = animation[int(self.frame_index)]
+        
+        # Voltear sprite según dirección de movimiento
+        # Nota: En ataque, debería mirar al jugador, pero por simplicidad usaremos self.direction actual
+        if self.direction > 0:
+            self.image = image
+        else:
+            self.image = pygame.transform.flip(image, True, False)
+
+    def update(self, player):
+        self.get_status(player)
+        self.actions(player)
+        self.cooldowns()
         self.animate()

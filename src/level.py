@@ -128,7 +128,7 @@ class Level:
         if self.player.attacking:
             for enemy in self.enemy_sprites:
                 if self.player.attack_rect.colliderect(enemy.rect):
-                    enemy.kill()
+                    enemy.take_damage()
 
         hits = pygame.sprite.spritecollide(self.player, self.enemy_sprites, False)
         if hits:
@@ -144,7 +144,7 @@ class Level:
 
     def run(self):
         self.player.update()
-        self.enemy_sprites.update()
+        self.enemy_sprites.update(self.player)
         
         self.horizontal_movement_collision()
         self.vertical_movement_collision()
