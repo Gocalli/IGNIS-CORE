@@ -154,8 +154,7 @@ class Enemy(pygame.sprite.Sprite):
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
             if self.status == 'die':
-                self.kill()
-                return
+                self.frame_index = len(animation) - 1
             elif self.status == 'attack':
                 # Si termina el ataque, esperamos al cooldown
                 self.frame_index = 0 

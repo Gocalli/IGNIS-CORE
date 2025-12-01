@@ -66,27 +66,24 @@ class Level:
         self.enemy_sprites.empty()
         
         # Cargar mapa según índice
-        # Si nos pasamos de niveles, volvemos al 0 o mostramos pantalla de victoria
         if index >= len(levels):
             index = 0
             self.current_level_index = 0
             
         layout = levels[index]
-        tile_size = 64
         
         # Calcular ancho del nivel para saber cuándo cambiar
-        self.level_width = len(layout[0]) * tile_size
+        self.level_width = len(layout[0]) * TILE_SIZE
 
         for row_index, row in enumerate(layout):
             for col_index, cell in enumerate(row):
-                x = col_index * tile_size
-                y = row_index * tile_size
+                x = col_index * TILE_SIZE
+                y = row_index * TILE_SIZE
                 
                 if cell == 'X':
                     tile = pygame.sprite.Sprite(self.visible_sprites, self.obstacle_sprites)
-                    # Bloque de depuración (rojo semitransparente) para colisiones
-                    # Descomentar para ver las colisiones y ajustarlas al fondo
-                    tile.image = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
+                    # Usar los tamaños de plataforma configurables
+                    tile.image = pygame.Surface((PLATFORM_TILE_WIDTH, PLATFORM_TILE_HEIGHT), pygame.SRCALPHA)
                     tile.image.fill((255, 0, 0, 128)) # Rojo semitransparente para DEBUG
                     tile.rect = tile.image.get_rect(topleft=(x, y))
                 
@@ -95,7 +92,7 @@ class Level:
                     self.visible_sprites.add(self.player)
                     
                 if cell == 'E':
-                    enemy = Enemy((x, y + 32), 200) 
+                    enemy = Enemy((x, y + TILE_SIZE // 2), 200) # Ajuste y + 32 a y + TILE_SIZE // 2
                     self.visible_sprites.add(enemy)
                     self.enemy_sprites.add(enemy)
 
@@ -131,11 +128,13 @@ class Level:
     def check_enemy_collisions(self):
         if self.player.attacking:
             for enemy in self.enemy_sprites:
-                if self.player.attack_rect.colliderect(enemy.rect):
+                if enemy.status != 'die' and self.player.attack_rect.colliderect(enemy.rect):
                     enemy.take_damage()
 
         hits = pygame.sprite.spritecollide(self.player, self.enemy_sprites, False)
-        if hits:
+        valid_hits = [enemy for enemy in hits if enemy.status != 'die']
+        
+        if valid_hits:
             self.player.health -= 1
             if self.player.health <= 0:
                 self.create_map(self.current_level_index) # Reiniciar mismo nivel
