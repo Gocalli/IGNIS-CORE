@@ -1,40 +1,63 @@
 # Diseños de Nivel
-# Ajustado para main_map.png con ALTA PRECISIÓN (32px grid)
-# Altura 720px / 32px = ~22.5 filas -> Usaremos 23 filas
-# Ancho ~5248px / 32px = ~164 columnas
+# Ajustado para main_map.png con MAYOR PRECISIÓN (16px grid)
+# Altura 720px / 16px = 45 filas
+# Ancho 5248px / 16px = 328 columnas
 
 # P = Player
 # E = Enemy
 # X = Pared/Plataforma
 
 # Generamos un mapa base largo
-row_empty = " " * 164
-row_floor = "X" * 164
+row_empty = " " * 328
+row_floor = "X" * 328
 
 level_0 = [
-    row_empty, # 0
-    "XXX                                   XXXXXX", # 1
-    "XXX                                   XXXXXX", # 2
-    "XXX                                   XXXXXX", # 3
-    "XXX                                   XXXXXX", # 4
-    "XXX                                   XXXXXX", # 5
-    "XXX                                   XXXXXX ", # 6
-    "X             XXXXXXXXXXXXX           XXXXX     ", # 7
-    "X                                      XXX", # 8
-    "X", # 9
-    "X       XXX", # 10
-    "X", # 11
-    "X      ", # 12
-    "X                                      XXX                                      XXX                     ", # 13
-    "XXXXXX                             XXXXX XXXXXX           XXXXX          XXXXXXXX XXX                    ", # 14
-    "   X                                                                  XXX                             P   ", # 15
-    "   X    XXXXXX                                 XXXXXXXX          XXXXX               XXXXXXXXXXXXXXXXXXX", # 16
-    "   X              XXXXXX", # 17
-    "   X", # 18
-    "   X                        XXXXX", # 19
-    "   X", # 20
-    "   X                                                                                                                               ", # 21 (Entidades)
-    row_floor, # 22 (Suelo)
+    row_empty,
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XXXXXX                                                                      XXXXXXXXXXXX                                                                                                                                                                                                                                                ",
+    "XX                          XXXXXXXXXXXXXXXXXXXXXXXXX                          XXXXX                                                                                                                                                                                                                                                    ",
+    "XX                          XXXXXXXXXXXXXXXXXXXXXXXXX                          XXXXX                                                                                                                                                                                                                                                 ",
+    "XX                                                                             XXXXX                                                                                                                                                                                                                                                    ",
+    "XX                                                                             XXXXX                                                                                                                                                                                                                                                    ",
+    "XX                                                                                                                                                                                                                                                                                                                                      ",
+    "XX                                                                                                                                                                                                                                                                                                                                      ",
+    "XX              XXXXXXX                                                                                                                                                                                                                                                                                                                 ",
+    "XX              XXXXXXX                                                                                                                                                                                                                                                                                                                 ",
+    "XX                                                                                                                                                                                                                                                                                                                                      ",
+    "XX                                                                                                                                                                                                                                                                                                                                      ",
+    "XX                                                                                                                                                                                                                                                                                                                                      ",
+    "XX                                                                                                                                                                                                                                                                                                                                      ",
+    "XX                                                                            XXXXXX                                                                            XXXXXX                                                                                                                                                                  ",
+    "XX                                                                            XXXXXX                                                                            XXXXXX                                                                            XXXXXX                                                                                     ",
+    "XXXXXXXXXXXX                                                         XXXXXXXXXXX  XXXXXXXXXXXX                      XXXXXXXXXX                    XXXXXXXXXXXXXXXX  XXXXXX                                                                   XXXXXX                                                                                     ",
+    "XXXXXXXXXXXX                                                         XXXXXXXXXXX  XXXXXXXXXXXX                      XXXXXXXXXX                    XXXXXXXXXXXXXXXX  XXXXXX                                                                   XXXXXX                                                                                     ",
+    "      XX                                                                                                                                    XXXXXX                                                          P                                XX                                                                                         ",
+    "      XX                                                                                                                                    XXXXXX                                                                                           XX                                                                                         ",
+    "      XX        XXXXXXXXXXXX                                                                  XXXXXXXXXXXXXXXX                    XXXXXXXXXX                              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                             XX                                                                                         ",
+    "      XX        XXXXXXXXXXXX                                                                  XXXXXXXXXXXXXXXX                    XXXXXXXXXX                              XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX                             XX                                                                                         ",
+    "      XX                            XXXXXXXXXXXX                                                                                                                                                                                             XX                                                                                         ",
+    "      XX                            XXXXXXXXXXXX                                                                                                                                                                                             XX                                                                                         ",
+    "      XX                                                                                                                                                                                                                                     XX                                                                                         ",
+    "      XX                                                                                                                                                                                                                                     XX                                                                                         ",
+    "      XX                                                 XXXXXXXXX                                                                                                                                                                           XX                                                                                         ",
+    "      XX                                                 XXXXXXXXX                                                                                                                                                                           XX                                                                                         ",
+    "      XX                                                                                                                                                                                                                                     XX                                                                                         ",
+    "      XX                                                                                                                                                                                                                                     XX                                                                                         ",
+    "      XX                                                                                                                                                                                                                                     XX                                                                                         ",
+    "      XX                                                                                                                                                                                                                                     XX                                                                                         ",
+    row_floor,
+    row_floor,
 ]
 
 levels = [level_0]
