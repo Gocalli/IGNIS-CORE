@@ -26,7 +26,7 @@ class Enemy(pygame.sprite.Sprite):
         self.attack_cooldown = ENEMY_ATTACK_COOLDOWN
 
     def import_graphics(self):
-        self.animations = {'move': [], 'attack': []}
+        self.animations = {'move': [], 'attack': [], 'die': []}
         target_height = 64
 
         # --- IDLE / MOVE (idle_drone.png) ---
@@ -73,6 +73,20 @@ class Enemy(pygame.sprite.Sprite):
             # Fallback: usar move
             self.animations['attack'] = self.animations['move']
 
+        # --- DIE (die_drone.png) ---
+        # 816x136 -> 6 frames de 136x136
+        try:
+            die_frames = import_spritesheet_row('assets/graphics/enemy/die_drone.png', 136, 136, 6)
+            scaled_die = []
+            for frame in die_frames:
+                scale = target_height / frame.get_height()
+                new_w = int(frame.get_width() * scale)
+                new_h = int(frame.get_height() * scale)
+                scaled_die.append(pygame.transform.scale(frame, (new_w, new_h)))
+            self.animations['die'] = scaled_die
+        except Exception as e:
+             print(f"Error cargando die_drone: {e}")
+
     def get_player_distance_direction(self, player):
         enemy_vec = pygame.math.Vector2(self.rect.center)
         player_vec = pygame.math.Vector2(player.rect.center)
@@ -86,6 +100,9 @@ class Enemy(pygame.sprite.Sprite):
         return (distance, direction)
 
     def get_status(self, player):
+        if self.status == 'die':
+            return
+
         distance, _ = self.get_player_distance_direction(player)
         
         if distance < ENEMY_ATTACK_DISTANCE:
@@ -98,6 +115,8 @@ class Enemy(pygame.sprite.Sprite):
             self.move()
         elif self.status == 'attack':
             self.attack_logic()
+        elif self.status == 'die':
+            pass
 
     def move(self):
         self.rect.x += self.speed * self.direction
@@ -120,19 +139,25 @@ class Enemy(pygame.sprite.Sprite):
                 self.can_attack = True
 
     def take_damage(self):
+        if self.status == 'die':
+            return
+
         self.health -= 1
-        print(f"Enemy hit! HP: {self.health}") # Debug
         if self.health <= 0:
-            self.kill()
+            self.health = 0
+            self.status = 'die'
+            self.frame_index = 0
 
     def animate(self):
         animation = self.animations[self.status]
         
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
-            if self.status == 'attack':
+            if self.status == 'die':
+                self.kill()
+                return
+            elif self.status == 'attack':
                 # Si termina el ataque, esperamos al cooldown
-                # Por ahora lo dejamos en el último frame o reiniciamos
                 self.frame_index = 0 
             else:
                 self.frame_index = 0
@@ -140,7 +165,6 @@ class Enemy(pygame.sprite.Sprite):
         image = animation[int(self.frame_index)]
         
         # Voltear sprite según dirección de movimiento
-        # Nota: En ataque, debería mirar al jugador, pero por simplicidad usaremos self.direction actual
         if self.direction > 0:
             self.image = image
         else:
