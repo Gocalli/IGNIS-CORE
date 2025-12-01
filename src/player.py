@@ -31,6 +31,7 @@ class Player(pygame.sprite.Sprite):
         
         # Combate
         self.attacking = False
+        self.venting = False
         self.attack_cooldown = ATTACK_COOLDOWN
         self.attack_time = 0
         self.attack_rect = pygame.Rect(0,0,0,0)
@@ -43,7 +44,7 @@ class Player(pygame.sprite.Sprite):
 
     def import_character_assets(self):
         path = 'assets/graphics/player/'
-        self.animations = {'idle': [], 'run': [], 'run_overheated': [], 'jump': [], 'fall': [], 'attack': [], 'dash': []}
+        self.animations = {'idle': [], 'run': [], 'run_overheated': [], 'jump': [], 'fall': [], 'attack': [], 'dash': [], 'vent': []}
         
         # CONSTANTES DE ESCALA
         TARGET_HEIGHT = 64.0   # Altura deseada en el juego
@@ -137,6 +138,34 @@ class Player(pygame.sprite.Sprite):
         except Exception as e:
              print(f"Error cargando dash_spritesheet.png: {e}")
 
+        # --- VENT (Custom loader) ---
+        # Archivo: 814x304. Frames: 188, 188, 188, 250.
+        try:
+            vent_sheet = pygame.image.load(path + 'vent_spritesheet.png').convert_alpha()
+            vent_frames = []
+            # Definimos los recortes exactos (x, y, width, height)
+            # Altura fija de 304px
+            vent_crops = [
+                (0, 0, 188, 304),   
+                (188, 0, 188, 304), 
+                (376, 0, 188, 304), 
+                (564, 0, 250, 304)  
+            ]
+            
+            # Usamos SCALE_FACTOR global (basado en 188px)
+            for (x, y, w, h) in vent_crops:
+                frame_surf = pygame.Surface((w, h), pygame.SRCALPHA)
+                frame_surf.blit(vent_sheet, (0, 0), pygame.Rect(x, y, w, h))
+                
+                new_w = int(w * SCALE_FACTOR)
+                new_h = int(h * SCALE_FACTOR)
+                frame_scaled = pygame.transform.scale(frame_surf, (new_w, new_h))
+                vent_frames.append(frame_scaled)
+                
+            self.animations['vent'] = vent_frames
+        except Exception as e:
+             print(f"Error cargando vent_spritesheet.png: {e}")
+
         self.player_rect_size = (64, 64) 
 
         def load_safe(filename):
@@ -168,7 +197,9 @@ class Player(pygame.sprite.Sprite):
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
             if self.status == 'attack':
-                self.attacking = False 
+                self.attacking = False
+            if self.status == 'vent':
+                self.venting = False 
             self.frame_index = 0
 
         image = animation[int(self.frame_index)]
@@ -194,7 +225,9 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = previous_rect.centerx # Mantener centro horizontal
 
     def get_status(self):
-        if self.dashing:
+        if self.venting:
+            self.status = 'vent'
+        elif self.dashing:
             self.status = 'dash'
         elif self.attacking:
             self.status = 'attack'
@@ -271,6 +304,11 @@ class Player(pygame.sprite.Sprite):
         )
 
     def vent_heat(self):
+        if not self.venting:
+            self.venting = True
+            self.frame_index = 0
+            
+        # Efecto de enfriamiento (podemos hacerlo gradual o instantaneo)
         self.heat -= HEAT_COOLDOWN_RATE * 2
         if self.heat < 0:
             self.heat = 0

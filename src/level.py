@@ -13,9 +13,25 @@ class CameraGroup(pygame.sprite.Group):
         self.half_w = self.display_surface.get_size()[0] // 2
         self.half_h = self.display_surface.get_size()[1] // 2
 
+        # Background loading
+        try:
+            self.bg_surf = pygame.image.load('assets/graphics/dash_map.jpg').convert()
+            # ESCALAR: Ajustar la imagen al tamaño de la ventana (Room-based)
+            self.bg_surf = pygame.transform.scale(self.bg_surf, (1280, 720))
+        except FileNotFoundError:
+            print("AVISO: 'assets/graphics/dash_map.jpg' no encontrado. Usando fondo placeholder.")
+            self.bg_surf = pygame.Surface((5000, 2000)) # Superficie grande de respaldo
+            self.bg_surf.fill((20, 30, 50))
+            
+        self.bg_rect = self.bg_surf.get_rect(topleft=(0,0))
+
     def custom_draw(self, player):
         self.offset.x = player.rect.centerx - self.half_w
         self.offset.y = player.rect.centery - self.half_h
+
+        # Dibujar Fondo (Background)
+        bg_offset = self.bg_rect.topleft - self.offset
+        self.display_surface.blit(self.bg_surf, bg_offset)
 
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset
@@ -64,7 +80,10 @@ class Level:
                 
                 if cell == 'X':
                     tile = pygame.sprite.Sprite(self.visible_sprites, self.obstacle_sprites)
-                    tile.image = pygame.image.load('assets/graphics/terrain/metal_block.png').convert()
+                    # Bloque de depuración (rojo semitransparente) para colisiones
+                    # Descomentar para ver las colisiones y ajustarlas al fondo
+                    tile.image = pygame.Surface((tile_size, tile_size), pygame.SRCALPHA)
+                    tile.image.fill((255, 0, 0, 128)) # Rojo semitransparente para DEBUG
                     tile.rect = tile.image.get_rect(topleft=(x, y))
                 
                 if cell == 'P':
