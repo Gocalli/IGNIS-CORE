@@ -74,9 +74,9 @@ class Enemy(pygame.sprite.Sprite):
             self.animations['attack'] = self.animations['move']
 
         # --- DIE (die_drone.png) ---
-        # 816x136 -> 6 frames de 136x136
+        # 816x136 -> 4 frames de 204x136
         try:
-            die_frames = import_spritesheet_row('assets/graphics/enemy/die_drone.png', 136, 136, 6)
+            die_frames = import_spritesheet_row('assets/graphics/enemy/die_drone.png', 204, 136, 4) # Corrected: 4 frames of 204x136
             scaled_die = []
             for frame in die_frames:
                 scale = target_height / frame.get_height()

@@ -1,41 +1,24 @@
 # Diseños de Nivel
-# Ajustado para pantalla 1280x720 (aprox 20x11 bloques de 64px)
+# Ajustado para main_map.png escalado (aprox 5220x720)
+# Tile size 64px -> ~82 columnas x 11 filas
 
-# P = Player (Posición inicial)
+# P = Player
 # E = Enemy
-# X = Pared/Plataforma (Invisible, colisión)
-
-# Mapa ajustado visualmente a 'dash_map.jpg'
-# La pantalla tiene 20 columnas de ancho (1280/64) y ~11 filas de alto (720/64)
+# X = Pared/Plataforma
 
 level_0 = [
-    "X                  X", # 0 (Techo/Aire)
-    "X                  X", # 1
-    "X                  X", # 2
-    "X      xxxxxxx     X", # 3 (Plataforma central superior - Motor)
-    "X                  X", # 4
-    "X                  X", # 5
-    "X                  X", # 6
-    "XXX       XXXX   XXX", # 7 (Plataformas laterales flotantes)
-    "X   XXX            X", # 8
-    "X P             E  X", # 9 (Jugador cerca del suelo)
-    "XXXXXXXXXXXXXXXXXXXX", # 10 (Suelo principal)
-    "XXXXXXXXXXXXXXXXXXXX", # 11 (Margen inferior)
+    "X" + " " * 80 + "X", # 0
+    "X" + " " * 80 + "X", # 1
+    "X" + " " * 80 + "X", # 2
+    "X" + " " * 80 + "X", # 3
+    "X" + " " * 80 + "X", # 4
+    "X" + " " * 80 + "X", # 5
+    "X" + " " * 80 + "X", # 6
+    "X" + " " * 80 + "X", # 7
+    "X        E         E         E         E         E         E         E        X", # 8
+    "X P                                                                           X", # 9
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", # 10 (Suelo)
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX", # 11
 ]
 
-# Placeholder para nivel 2
-level_1 = [
-    "X                  X",
-    "X                  X",
-    "X                  X",
-    "X        XX        X",
-    "X       XXXX       X",
-    "X      XX  XX      X",
-    "X                  X",
-    "X   E          E   X",
-    "XXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXX",
-]
-
-levels = [level_0, level_1]
+levels = [level_0]

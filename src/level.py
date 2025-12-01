@@ -15,12 +15,16 @@ class CameraGroup(pygame.sprite.Group):
 
         # Background loading
         try:
-            self.bg_surf = pygame.image.load('assets/graphics/dash_map.jpg').convert()
-            # ESCALAR: Ajustar la imagen al tamaño de la ventana (Room-based)
-            self.bg_surf = pygame.transform.scale(self.bg_surf, (1280, 720))
+            self.bg_surf = pygame.image.load('assets/graphics/main_map.png').convert()
+            # ESCALAR: Ajustar la altura a 720 manteniendo aspect ratio
+            scale = 720 / self.bg_surf.get_height()
+            new_w = int(self.bg_surf.get_width() * scale)
+            new_h = 720
+            self.bg_surf = pygame.transform.scale(self.bg_surf, (new_w, new_h))
+            print(f"Mapa cargado y escalado a: {new_w}x{new_h}")
         except FileNotFoundError:
-            print("AVISO: 'assets/graphics/dash_map.jpg' no encontrado. Usando fondo placeholder.")
-            self.bg_surf = pygame.Surface((5000, 2000)) # Superficie grande de respaldo
+            print("AVISO: 'assets/graphics/main_map.png' no encontrado. Usando fondo placeholder.")
+            self.bg_surf = pygame.Surface((5000, 720)) 
             self.bg_surf.fill((20, 30, 50))
             
         self.bg_rect = self.bg_surf.get_rect(topleft=(0,0))
