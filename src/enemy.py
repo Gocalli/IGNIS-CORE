@@ -7,7 +7,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.import_graphics()
         self.frame_index = 0
-        self.animation_speed = 0.15
+        self.animation_speed = 0.12
         self.status = 'move'
         
         self.image = self.animations[self.status][self.frame_index]

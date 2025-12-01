@@ -9,7 +9,7 @@ class Player(pygame.sprite.Sprite):
         
         # Estado de Animación
         self.frame_index = 0
-        self.animation_speed = 0.15
+        self.animation_speed = 0.12
         self.status = 'idle'
         self.facing_right = True
         
