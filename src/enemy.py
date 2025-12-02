@@ -179,7 +179,7 @@ class Boss(Enemy):
     def __init__(self, pos, distance):
         super().__init__(pos, distance)
         self.health = 50  # Más vida que el enemigo normal
-        self.attack_cooldown = 1500
+        self.attack_cooldown = 3000
         self.speed = 1.5 # Más lento por ser grande
         
         # Asegurar que use la animación correcta al inicio
@@ -208,27 +208,16 @@ class Boss(Enemy):
             print(f"Error cargando idle_boss: {e}")
 
         # --- ATTACK ---
-        # attack_boss.png: 998x302. Asumimos 4 frames distribuidos.
+        # attack_boss.png: 998x302 -> 4 frames de ~249x302
         try:
-            attack_sheet = pygame.image.load('assets/graphics/enemy/attack_boss.png').convert_alpha()
-            sheet_w = attack_sheet.get_width()
-            sheet_h = attack_sheet.get_height()
-            num_frames = 4
-            frame_w = sheet_w // num_frames # ~249
-
+            # 998 / 4 = 249.5. Usaremos 249 width.
+            attack_frames = import_spritesheet_row('assets/graphics/enemy/attack_boss.png', 249, 302, 4)
             scaled_attack = []
-            for i in range(num_frames):
-                x = i * frame_w
-                w = frame_w
-                
-                frame_surf = pygame.Surface((w, sheet_h), pygame.SRCALPHA)
-                frame_surf.blit(attack_sheet, (0, 0), pygame.Rect(x, 0, w, sheet_h))
-                
-                scale = target_height / sheet_h
-                new_w = int(w * scale)
-                new_h = int(sheet_h * scale)
-                scaled_attack.append(pygame.transform.scale(frame_surf, (new_w, new_h)))
-            
+            for frame in attack_frames:
+                scale = target_height / frame.get_height()
+                new_w = int(frame.get_width() * scale)
+                new_h = int(frame.get_height() * scale)
+                scaled_attack.append(pygame.transform.scale(frame, (new_w, new_h)))
             self.animations['attack'] = scaled_attack
         except Exception as e:
             print(f"Error cargando attack_boss: {e}")
@@ -237,3 +226,17 @@ class Boss(Enemy):
         # --- DIE ---
         # Por ahora usamos el idle/move como placeholder si no hay asset de muerte
         self.animations['die'] = self.animations['move']
+
+    def get_status(self, player):
+        if self.status == 'die':
+            return
+
+        distance, _ = self.get_player_distance_direction(player)
+        
+        # Rango de ataque mayor para el Boss
+        boss_attack_distance = 450 
+        
+        if distance < boss_attack_distance:
+            self.status = 'attack'
+        else:
+            self.status = 'move'
