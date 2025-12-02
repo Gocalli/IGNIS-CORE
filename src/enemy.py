@@ -191,7 +191,7 @@ class Boss(Enemy):
 
     def import_graphics(self):
         self.animations = {'move': [], 'attack': [], 'die': []}
-        target_height = 160  # Boss mucho más grande (Personaje ~64)
+        target_height = 320  # Boss mucho más grande (Personaje ~64)
 
         # --- IDLE (Usado para move) ---
         # idle_boss.png: 768x283 -> 3 frames de 256x283
