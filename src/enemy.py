@@ -186,14 +186,17 @@ class Boss(Enemy):
         self.image = self.animations[self.status][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
 
+    def move(self):
+        pass
+
     def import_graphics(self):
         self.animations = {'move': [], 'attack': [], 'die': []}
         target_height = 160  # Boss mucho más grande (Personaje ~64)
 
         # --- IDLE (Usado para move) ---
-        # idle_boss.png: 768x283 -> 4 frames de 192x283
+        # idle_boss.png: 768x283 -> 3 frames de 256x283
         try:
-            idle_frames = import_spritesheet_row('assets/graphics/enemy/idle_boss.png', 192, 283, 4)
+            idle_frames = import_spritesheet_row('assets/graphics/enemy/idle_boss.png', 256, 283, 3)
             scaled_idle = []
             for frame in idle_frames:
                 scale = target_height / frame.get_height()

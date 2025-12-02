@@ -43,7 +43,7 @@ class CameraGroup(pygame.sprite.Group):
             
             if isinstance(sprite, Player) and sprite.attacking:
                  attack_rect_offset = sprite.attack_rect.move(-self.offset.x, -self.offset.y)
-                 pygame.draw.rect(self.display_surface, (255, 255, 0), attack_rect_offset, 2)
+                 
 
 class Level:
     def __init__(self):
@@ -84,7 +84,7 @@ class Level:
                     tile = pygame.sprite.Sprite(self.visible_sprites, self.obstacle_sprites)
                     # Usar los tamaños de plataforma configurables
                     tile.image = pygame.Surface((PLATFORM_TILE_WIDTH, PLATFORM_TILE_HEIGHT), pygame.SRCALPHA)
-                    tile.image.fill((255, 0, 0, 128)) # Rojo semitransparente para DEBUG
+
                     tile.rect = tile.image.get_rect(topleft=(x, y))
                 
                 if cell == 'P':
